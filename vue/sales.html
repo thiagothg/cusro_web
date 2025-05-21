@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <script src="js/vue.min.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <title>Relatório de Vendas</title>
+  </head>
+  <script type="importmap">
+    {
+      "imports": {
+        "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+      }
+    }
+  </script>
+
+  <body>
+    <div id="app">
+      <div class="container text-center">
+        <h1 class="mt-5">{{ title }}</h1>
+        <div>
+          <button @click="fetchSales">Fetch Sales</button>
+          <pre v-if="sales">{{ sales | json }}</pre>
+        </div>
+        <table class="table mt-5">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>department</th>
+              <th>Qtde</th>
+              <th>Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="sale in sales">
+              <td>{{ sale.productName}}</td>
+              <td>{{ sale.department }}</td>
+              <td>{{ sale.product }}</td>
+              <td v-money="'R$'">{{ sale.price }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createApp } from "vue";
+
+      const app = createApp({
+        data() {
+          return {
+            title: "Vue 3 App - Relatório de vendas",
+            message: "Hello Vue!",
+            sales: null,
+          };
+        },
+        methods: {
+          async fetchSales() {
+            const response = await fetch("/data/sales.json");
+            this.sales = await response.json();
+            console.log(this.sales);
+          },
+        },
+        mounted() {
+          this.fetchSales();
+        },
+
+        filters: {
+          json(value) {
+            return JSON.stringify(value, null, 2);
+          },
+        },
+      });
+
+      app.directive("money", (el, binding) => {
+        const amount = parseFloat(el.innerHTML)
+          .toFixed(2)
+          .replace(".", ",")
+          .replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
+
+        el.innerHTML = `${binding.value} ${amount}`;
+      });
+      app.mount("#app");
+    </script>
+  </body>
+</html>
